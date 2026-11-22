@@ -1,6 +1,6 @@
 [package]
 name = "salve"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["awk studios"]
 description = "SALVE: low-CPU zero-latency resonance suppressor"
@@ -12,8 +12,10 @@ members = ["xtask"]
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
-nih_plug_egui = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+# AWKNODE: our nice-plug fork (~/Projects/nice-plug-awk), mounted at /nice-plug-awk by build.sh
+nice-plug = { path = "/nice-plug-awk/crates/nice-plug" }
+nice-plug-egui = { path = "/nice-plug-awk/crates/nice-plug-egui" }
+egui = { version = "0.37.0", default-features = false, features = ["bytemuck"] }
 serde_json = "1"
 realfft = "3"
 
@@ -21,7 +23,7 @@ realfft = "3"
 lto = "thin"
 strip = "symbols"
 
-# AWKNODE: patched nih-plug, mounted at /nih-plug-awk by build.sh
-[patch."https://github.com/robbert-vdh/nih-plug.git"]
-nih_plug = { path = "/nih-plug-awk" }
-nih_plug_egui = { path = "/nih-plug-awk/nih_plug_egui" }
+
+# FL Studio fixes: patched baseview (vsync, paint, DPI, dummy-window crash). See nice-plug-awk/patches.
+[patch.crates-io]
+baseview = { path = "/nice-plug-awk/patches/baseview-0.4.2" }

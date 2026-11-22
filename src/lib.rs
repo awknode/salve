@@ -6,15 +6,17 @@
 //! DEPTH, SHARPNESS, SELECTIVITY, ATTACK, RELEASE, SOFT/HARD; a 6-node band editor
 //! weights how hard each part of the spectrum is treated; LO/HI limit the range.
 
-use nih_plug::prelude::*;
-use nih_plug_egui::EguiState;
+use nice_plug::prelude::*;
+use nice_plug_egui::EguiEditorState;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
 pub mod analyzer;
 mod awk_ui;
 pub mod dsp;
+
 mod editor;
+mod nice_app;
 mod presets;
 pub mod res;
 
@@ -67,8 +69,8 @@ fn weight(name: &str) -> FloatParam {
 
 #[derive(Params)]
 pub struct SalveParams {
-    #[persist = "editor-state"]
-    pub editor_state: Arc<EguiState>,
+    /// window size (nice-plug keeps hosts in charge of it; not persisted)
+    pub editor_state: Arc<EguiEditorState>,
     #[id = "depth"]
     pub depth: FloatParam,
     #[id = "sharp"]
@@ -132,7 +134,7 @@ pub struct SalveParams {
 impl Default for SalveParams {
     fn default() -> Self {
         Self {
-            editor_state: EguiState::from_size(editor::WIDTH, editor::HEIGHT),
+            editor_state: EguiEditorState::from_size(nice_plug::editor::dpi::LogicalSize::new((editor::WIDTH) as f64, (editor::HEIGHT) as f64), 1.0),
             depth: unit("Depth", 0.5),
             sharp: unit("Sharpness", 0.5),
             select: unit("Selectivity", 0.5),
@@ -439,16 +441,17 @@ impl Plugin for Salve {
     }];
     const MIDI_INPUT: MidiConfig = MidiConfig::None;
     const SAMPLE_ACCURATE_AUTOMATION: bool = false;
+    type Editor = crate::nice_app::AwkEditor;
     type SysExMessage = ();
     type BackgroundTask = ();
 
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
     }
-    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Self::Editor> {
         editor::create(self.params.clone(), self.shared.clone())
     }
-    fn initialize(&mut self, _layout: &AudioIOLayout, cfg: &BufferConfig, _ctx: &mut impl InitContext<Self>) -> bool {
+    fn activate(&mut self, _layout: &AudioIOLayout, cfg: &BufferConfig, _ctx: &mut impl ActivateContext<Self>) -> bool {
         self.eng = Engine::new(cfg.sample_rate).with_shared(self.shared.clone());
         true
     }
@@ -481,5 +484,5 @@ impl Vst3Plugin for Salve {
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Fx, Vst3SubCategory::Eq, Vst3SubCategory::Dynamics];
 }
 
-nih_export_clap!(Salve);
-nih_export_vst3!(Salve);
+nice_export_clap!(Salve);
+nice_export_vst3!(Salve);

@@ -1,6 +1,6 @@
 //! Factory presets: every id is a real param with a legal value; each plays bounded and
 //! finite; with PRESET_OUT=dir the .awkp files are written. Unlisted params load at default.
-use nih_plug::prelude::*;
+use nice_plug::prelude::*;
 use serde_json::{json, Map, Value};
 use salve::*;
 
@@ -93,7 +93,7 @@ fn factory_presets_are_valid() {
     for p in PRESETS {
         assert!(!p.0.contains('/'));
         let v = build(&params, p.1);
-        let _: nih_plug::wrapper::state::PluginState = serde_json::from_value(v.clone()).unwrap();
+        let _: nice_plug::plugin::PluginState = serde_json::from_value(v.clone()).unwrap();
         let st = state(p);
         let mut e = Engine::new(48000.0);
         let mut s = 11u32;
