@@ -156,6 +156,7 @@ fn new_state(name: &'static str) -> St {
 pub(crate) fn create(params: Arc<SalveParams>, shared: Arc<Shared>) -> Option<crate::nice_app::AwkEditor> {
     let state = params.editor_state.clone();
     let st = new_state("Salve");
+    crate::presets::apply_scale(&state, &params.ui_scale);
     create_egui_editor(state, nice_plug_egui::RepaintNotifier::new(), nice_plug_egui::EguiNiceSettings::default(), crate::nice_app::AwkApp::new(fonts, {
         let mut __st = st;
         Box::new(move |ctx: &mut egui::Ui, setter: &ParamSetter| {
@@ -337,7 +338,7 @@ fn frame(root: &mut egui::Ui, setter: &ParamSetter, st: &mut St, p: &SalveParams
         ring(ui, setter, at(828.0, 508.0), 28.0, &p.mix, "MIX", &format!("{:.0}%", p.mix.value() * 100.0), sc().mint);
         ring(ui, setter, at(928.0, 508.0), 28.0, &p.trim, "TRIM", &format!("{:+.1}", p.trim.value()), sc().mint);
         footer(ui, setter, p, sh, whole);
-        let _ = st.presets.strip(ui, setter, p, whole, &st.skin, &p.mix, &p.bypass);
+        let _ = st.presets.strip(ui, setter, p, whole, &st.skin, &p.mix, &p.bypass, &p.ui_scale);
     });
 }
 
